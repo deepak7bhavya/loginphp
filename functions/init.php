@@ -8,7 +8,7 @@ include('functions.php');
 
 
 if($con){
-    echo "Yes is connectwed";
+    echo "Yes is connected";
 }
 
 ?>

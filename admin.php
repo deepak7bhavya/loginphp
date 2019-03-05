@@ -4,6 +4,9 @@
 
 	<div class="jumbotron">
 		<h1 class="text-center">Admin</h1>
+		<?php
+			display_message();
+		?>
 	</div>
 
 

@@ -6,6 +6,7 @@
         return htmlentities($string);
 
     }
+
     function redirect($location){
         return header("Location: {$location}");
     }
@@ -18,16 +19,19 @@
             $message = "";
         }
     }
+
     function display_message(){
-        if(issset($_SESSION['message'])){
+        if(isset($_SESSION['message'])){
             echo $_SESSION['message'];
             unset($_SESSION['message']); 
         }
     }
+
     function token_generator(){
         $token = md5(uniqid(mt_rand() ,true));
         return $token;
     }
+
     function validation_errors($error_message){
         $error_message = <<<DELIMITER
                         <div class="alert alert-warning">
@@ -58,6 +62,10 @@ DELIMITER;
             return false;
         }
     }
+    
+    function send_mail($email,$subject,$msg,$headers){
+        return mail($email,$subject,$msg,$headers);
+    }
 
 
 
@@ -84,7 +92,6 @@ DELIMITER;
             if(user_exists($user)){
                 $errors[]= "Sorry , That Username already Taken";
             }
-
             if(strlen($first_name)< $min){
                 $errors[] = "Your First Name Can not be less than {$min} characters";
             }
@@ -111,10 +118,16 @@ DELIMITER;
             }
             else{
                 if(register_user($first_name, $last_name, $email, $user, $password)){
-                    echo "User Registered";
+                    set_message(
+                        "<p class='bg-success text-center'>Please Check your email Inbox and Spam Folder</p>" 
+                    );
+                    redirect("index.php");
                 }
                 else{
-                    echo "USer not Register due to Some Other Failure";
+                    set_message(
+                        "<p class='bg-ganger text-center'>Sorry. We could Not Register the user</p>" 
+                    );
+                    redirect("index.php");
                 }
 
             }
@@ -123,7 +136,7 @@ DELIMITER;
     }
 
 
-
+    /******Register User Functions *******/
     function register_user($first_name, $last_name, $email, $user, $password){
         
         $first_name = escape($first_name);
@@ -134,25 +147,67 @@ DELIMITER;
 
 
         if(email_exists($email)){
-            echo "email is ".$email;
-            echo "email_exists issue";
+            //echo "email is ".$email;
+            //echo "email_exists issue";
             return false;
         }
         else if(user_exists($user)){
-            echo "user_exists issue";
+            //echo "user_exists issue";
             return false;
         }
         else{
             $password = md5($password);
             $validation_code = md5($user . microtime());
-            echo "validation code :- ".$validation_code;
+            //echo "validation code :- ".$validation_code;
             $sql = "INSERT INTO users(first_name,last_name,username,email,password,validation_code,active)";
             $sql.= " VALUES('$first_name','$last_name','$user','$email','$password','$validation_code',0)";
             //echo $sql;
             $result= query($sql);
             confirm($result);
+
+
+            $subject = "Activation account";
+            $msg = "Please Click the link below to activate your Account
+            http://localhost/login/activate.php?email=$email&code=$validation_code";
+            $headers = "Form: noreply@yourwebsite.com";
+            
+            send_mail($email,$subject,$msg,$headers);
+
             return true;
         }
+        return false;
     }
+
+    /******Activate user Functions *******/
+    function activate_user(){
+        if($_SERVER['REQUEST_METHOD']=='GET'){
+            if(isset($_GET['email'])){
+                $email = clean($_GET['email']);
+                $validation_code = clean($_GET['code']);
+                $sql = "SELECT id FROM users WHERE email = '".escape($_GET['email'])."' AND validation_code = '".escape($_GET['code'])."'";
+                $result = query($sql);
+                confirm($result);
+                if(row_count($result)==1){
+                    $sql2 = "UPDATE users SET active =1 , validation_code=0 WHERE email='".escape($email)."' AND validation_code= '".escape($validation_code)."'";
+                    $result2 = query($sql2);
+                    confirm($result2);
+                    
+                    set_message("<p class='bg-success'>Your Account has been Activated please Login </p>");
+                    redirect("login.php");
+                }
+                else{
+                    set_message("<p class='bg-success'>Sorry , Your Account could not be Activated </p>");
+                    redirect("login.php");
+                }
+                
+                
+            
+            }
+        }
+    }
+
+
+    /******Validate User Login *********/
+    
     
 ?>
