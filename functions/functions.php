@@ -208,6 +208,72 @@ DELIMITER;
 
 
     /******Validate User Login *********/
-    
+    function validate_user_login(){
+        $email=null;
+        $password=null;
+        $errors = [];
+        $min = 3;
+        $max =20;
+        
+
+        if($_SERVER['REQUEST_METHOD'] == "POST"){
+            echo "it works";
+            $email = clean($_POST['email']);
+            $password = clean($_POST['password']);
+
+            if(empty($email)){
+                $errors[] = "EMAIL field cannot be empty";
+            }
+            if(empty($password)){
+                $errors[] = "Password field cannot be empty";
+            }
+
+            #echo $email,$password;
+            if(!empty($errors)){
+                foreach($errors as $error){
+                    echo validation_errors($error);
+                }
+            }
+            else{
+                #echo "NO ERRORS",$email;
+                if(login_user($email,$password)){
+                    redirect("admin.php");
+                }
+                else{
+                    echo validation_errors("Your Credentials are not correct");
+                }
+            }
+        }
+        
+    }
+
+
+    /******User Login functions  *********/
+    function login_user($email,$password){
+        
+        $sql = "SELECT password,id FROM users WHERE email = '".escape($email)."' AND password = '".escape(md5($password))."' AND active=1";
+        $result = query($sql);
+        if(row_count($result)==1){
+            $_SESSION['email'] = $email;
+            return true;
+        }
+        else{
+            return false;
+        }
+
+
+    }//end of function
+
+    /******User Login functions  *********/
+
+    function logged_in(){
+        if(isset($_SESSION['email'])){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
     
 ?>

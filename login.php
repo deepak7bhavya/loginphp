@@ -7,7 +7,10 @@
 		<div class="col-lg-6 col-lg-offset-3">
 			<?php 
 				display_message();
-				//validate_user_login();
+				
+			?>
+			<?php
+				validate_user_login();
 			?>
 	
 								
