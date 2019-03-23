@@ -28,7 +28,7 @@
     }
 
     function token_generator(){
-        $token = md5(uniqid(mt_rand() ,true));
+        $token = md5(uniqid(mt_rand() , true));
         return $token;
     }
 
@@ -220,6 +220,8 @@ DELIMITER;
             echo "it works";
             $email = clean($_POST['email']);
             $password = clean($_POST['password']);
+            $remember = isset($_POST['remember']);#FOR CHECKBOXES
+
 
             if(empty($email)){
                 $errors[] = "EMAIL field cannot be empty";
@@ -236,7 +238,7 @@ DELIMITER;
             }
             else{
                 #echo "NO ERRORS",$email;
-                if(login_user($email,$password)){
+                if(login_user($email,$password,$remember)){
                     redirect("admin.php");
                 }
                 else{
@@ -249,11 +251,17 @@ DELIMITER;
 
 
     /******User Login functions  *********/
-    function login_user($email,$password){
+    function login_user($email,$password,$remember){
         
         $sql = "SELECT password,id FROM users WHERE email = '".escape($email)."' AND password = '".escape(md5($password))."' AND active=1";
         $result = query($sql);
         if(row_count($result)==1){
+
+            if($remember == "on"){
+                setcookie('email',$email,time()+86400);
+            }
+
+
             $_SESSION['email'] = $email;
             return true;
         }
@@ -267,7 +275,7 @@ DELIMITER;
     /******User Login functions  *********/
 
     function logged_in(){
-        if(isset($_SESSION['email'])){
+        if(isset($_SESSION['email']) || isset($_COOKIE['email'])){
             return true;
         }
         else{
