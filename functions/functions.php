@@ -28,7 +28,7 @@
     }
 
     function token_generator(){
-        $token = md5(uniqid(mt_rand() , true));
+        $token  = $_SESSION['token'] = md5(uniqid(mt_rand() , true));
         return $token;
     }
 
@@ -280,6 +280,17 @@ DELIMITER;
         }
         else{
             return false;
+        }
+    }
+
+    /******User Login functions  *********/
+
+    function recover_password(){
+        if($_SERVER['REQUEST_METHOD'] == 'POST'){
+            if(isset($_SESSION['token']) && $_POST['token'] === $_SESSION['token']){
+                echo "It Works !!"; 
+            }
+            
         }
     }
 
